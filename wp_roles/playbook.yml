@@ -1,0 +1,10 @@
+- name: Déployer WordPress de façon générique
+  hosts: middle_dev
+  become: true
+  roles:
+    - role: wordpress
+      vars:
+        db_host: 192.168.50.151
+        db_name: wordpress
+        db_user: wp_user
+        db_password: wp_pass
