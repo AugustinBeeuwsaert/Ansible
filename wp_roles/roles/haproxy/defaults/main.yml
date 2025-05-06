@@ -1,0 +1,6 @@
+haproxy_frontend_name: "http_front"
+haproxy_backend_name: "web_server"
+haproxy_frontend_port: 80
+haproxy_backend_servers_name: "web1"
+address: "192.168.50.147"
+# defaults file for haproxy

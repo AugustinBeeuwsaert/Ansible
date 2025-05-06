@@ -1,0 +1,13 @@
+- name: Déployer HAProxy génériquement
+  hosts: front_dev
+  become: true
+  roles:
+    - haproxy
+    - role: haproxy
+      vars:
+        haproxy_frontend_name: "http_front"
+        haproxy_backend_name: "web_server"
+        haproxy_frontend_port: 80
+        haproxy_backend_servers:
+        haproxy_backend_servers_name: "web1"
+        address: "192.168.50.147"

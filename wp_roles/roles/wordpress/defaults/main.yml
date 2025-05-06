@@ -5,5 +5,5 @@ db_name: wordpress
 db_user: wp_user
 db_password: wp_pass
 wordpress_url: https://wordpress.org/latest.zip
-wordpress_theme: twentytwentytwo
+wordpress_theme: 
 

@@ -1,0 +1,60 @@
+- name: Installer les paquets pour Debian/Ubuntu
+  apt:
+    name:
+      - default-mysql-server
+      - default-mysql-client
+      - python3-mysqldb
+    state: present
+    update_cache: yes
+  when: ansible_facts['os_family'] == "Debian"
+
+- name: Définir les variables spécifiques à Debian
+  set_fact:
+    mysql_service: mysql
+    mysql_config_file: /etc/mysql/mariadb.conf.d/50-server.cnf
+  when: ansible_facts['os_family'] == "Debian"
+
+- name: Installer les paquets pour RedHat/CentOS
+  yum:
+    name:
+      - mariadb-server
+      - mariadb
+      - python3-PyMySQL
+    state: present
+  when: ansible_facts['os_family'] == "RedHat"
+
+- name: Définir les variables spécifiques à RedHat
+  set_fact:
+    mysql_service: mariadb
+    mysql_config_file: /etc/my.cnf
+  when: ansible_facts['os_family'] == "RedHat"
+
+- name: Démarrer et activer MySQL/MariaDB
+  service:
+    name: "{{ mysql_service }}"
+    state: started
+    enabled: true
+
+- name: Créer la base de données
+  mysql_db:
+    name: "{{ db_name }}"
+    state: present
+
+- name: Créer l'utilisateur MySQL
+  mysql_user:
+    name: "{{ db_user }}"
+    password: "{{ db_password }}"
+    priv: "{{ db_name }}.*:ALL"
+    host: "%"
+    state: present
+
+- name: Autoriser les connexions distantes
+  lineinfile:
+    path: "{{ mysql_config_file }}"
+    regexp: '^bind-address'
+    line: "bind-address = 0.0.0.0"
+
+- name: Redémarrer le service MySQL
+  service:
+    name: "{{ mysql_service }}"
+    state: restarted

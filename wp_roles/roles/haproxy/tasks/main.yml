@@ -1,0 +1,33 @@
+- name: Installer HAProxy sur Debian/Ubuntu
+  apt:
+    name: haproxy
+    state: present
+    update_cache: yes
+  when: ansible_facts['os_family'] == 'Debian'
+
+- name: Installer HAProxy sur RedHat/CentOS
+  yum:
+    name: haproxy
+    state: present
+  when: ansible_facts['os_family'] == 'RedHat'
+
+- name: Activer HAProxy au démarrage (Debian)
+  lineinfile:
+    path: /etc/default/haproxy
+    regexp: '^ENABLED='
+    line: 'ENABLED=1'
+  when: ansible_facts['os_family'] == 'Debian'
+
+- name: Déployer la configuration HAProxy
+  template:
+    src: templates/haproxy.cfg.j2
+    dest: /etc/haproxy/haproxy.cfg
+    owner: root
+    group: root
+    mode: '0644'
+
+- name: Redémarrer et activer HAProxy
+  service:
+    name: haproxy
+    state: restarted
+    enabled: true
