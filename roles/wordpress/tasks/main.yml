@@ -1,0 +1,86 @@
+- name: Installer les paquets pour Debian/Ubuntu
+  apt:
+    name:
+      - apache2
+      - php
+      - php-mysql
+      - libapache2-mod-php
+      - wget
+      - unzip
+    state: present
+    update_cache: yes
+  when: ansible_facts['os_family'] == 'Debian'
+
+- name: Installer les paquets pour RedHat/CentOS
+  yum:
+    name:
+      - httpd
+      - php
+      - php-mysqlnd
+      - wget
+      - unzip
+    state: present
+  when: ansible_facts['os_family'] == 'RedHat'
+
+- name: Télécharger WordPress
+  get_url:
+    url: "{{ wordpress_url }}"
+    dest: /tmp/wordpress.zip
+  tags: ['wordpress', 'download']
+
+- name: Décompresser WordPress
+  unarchive:
+    src: /tmp/wordpress.zip
+    dest: "{{ wordpress_dir }}"
+    remote_src: yes 
+    owner: www-data
+    group: www-data 
+    mode: '0755'
+  tags: ['wordpress', 'download']
+  
+- name: Télécharger WP-CLI
+  get_url:
+    url: https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar
+    dest: /usr/local/bin/wp
+    mode: '0755'
+
+- name: Installer un thème WordPress (si défini)
+  command: >
+    wp theme install {{ wordpress_theme }} --activate --path={{ wordpress_dir }}/wordpress --allow-root
+  when: wordpress_theme is defined
+
+- name: Créer wp-config.php
+  template:
+    src: templates/wp-config.php.j2
+    dest: "{{ wordpress_dir }}/wordpress/wp-config.php"
+    owner: www-data
+    group: www-data
+    mode: '0644'
+
+- name: Assurer que les permissions sont correctes sur le dossier WordPress
+  file:
+    path: "{{ wordpress_dir }}"
+    owner: www-data
+    group: www-data
+    mode: '0755'
+    recurse: yes
+
+- name: Démarrer et activer Apache (Debian)
+  service:
+    name: apache2
+    state: started
+    enabled: true
+  when: ansible_facts['os_family'] == 'Debian'
+
+- name: Démarrer et activer Apache (RedHat)
+  service:
+    name: httpd
+    state: started
+    enabled: true
+  when: ansible_facts['os_family'] == 'RedHat'
+
+
+
+
+
+

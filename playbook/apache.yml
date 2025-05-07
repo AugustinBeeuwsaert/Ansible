@@ -1,0 +1,16 @@
+---
+- name: Installer Apache2 sur les serveurs web
+  hosts: middle_dev
+  become: true
+  tasks:
+    - name: Installer Apache
+      apt:
+        name: apache2
+        state: present
+        update_cache: yes
+
+    - name: Démarrer et activer Apache
+      service:
+        name: apache2
+        state: started
+        enabled: yes

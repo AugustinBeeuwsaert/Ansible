@@ -1,0 +1,34 @@
+- name: Déployer HAProxy génériquement
+  hosts: front_dev
+  become: true
+  roles:
+    - haproxy
+  vars:
+    haproxy_frontend_name: "http_front"
+    haproxy_backend_name: "web_server"
+    haproxy_frontend_port: 80
+    haproxy_backend_servers:
+    haproxy_backend_servers_name: "web1"
+    address: "192.168.50.147"
+
+- name: Déployer WordPress de façon générique
+  hosts: backend_dev
+  become: true
+  roles:
+    - mysql
+  vars:
+    db_name: wordpress
+    db_user: wp_user
+    db_password: wp_pass
+
+- name: Déployer WordPress de façon générique
+  hosts: middle_dev
+  become: true
+  roles:
+    - wordpress
+  vars:
+    db_host: 192.168.50.151
+    db_name: wordpress
+    db_user: wp_user
+    db_password: wp_pass
+    wordpress_theme: astra

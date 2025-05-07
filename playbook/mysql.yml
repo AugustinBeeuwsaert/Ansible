@@ -1,0 +1,61 @@
+---
+- name: Installer MySQL sur le serveur back
+  hosts: back_dev
+  become: true
+
+  vars:
+    db_name: wordpress
+    db_user: wp_user
+    db_password: wp_pass
+
+  tasks:
+    - name: Mettre à jour le cache APT
+      apt:
+        update_cache: yes
+
+    - name: Installer MySQL Server
+      apt:
+        name: default-mysql-server
+        state: present
+        update_cache: yes
+
+    - name: Installer MySQL Client
+      apt:
+        name: default-mysql-client
+        state: present
+        update_cache: yes
+    - name: Installer le module Python pour MySQL
+      apt:
+        name: python3-mysqldb
+        state: present
+        update_cache: yes
+
+    - name: Start and enable MySQL
+      service:
+        name: mysql
+        state: started
+        enabled: true
+
+    - name: Créer la base de données WordPress
+      mysql_db:
+        name: "{{ db_name }}"
+        state: present
+
+    - name: Créer l'utilisateur WordPress
+      mysql_user:
+        name: "{{ db_user }}"
+        password: "{{ db_password }}"
+        priv: "{{ db_name }}.*:ALL"
+        host: '%'
+        state: present
+      
+    - name: Autoriser les connexions distantes (bind-address = 0.0.0.0)
+      lineinfile:
+        path: /etc/mysql/mariadb.conf.d/50-server.cnf
+        regexp: '^bind-address'
+        line: 'bind-address = 0.0.0.0'
+
+    - name: Redémarrer MySQL
+      service:
+        name: mysql
+        state: restarted
